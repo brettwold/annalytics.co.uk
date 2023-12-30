@@ -1,0 +1,14 @@
+{
+  "main": [
+    {
+      "name": "github",
+      "icon": "FaGithub",
+      "link": "https://github.com/brettwold"
+    },
+    {
+      "name": "linkedin",
+      "icon": "FaLinkedin",
+      "link": "https://www.linkedin.com/in/brett-cherrington-8626a/"
+    }
+  ]
+}
