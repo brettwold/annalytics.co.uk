@@ -10,8 +10,8 @@
     "cdk": "cdk",
     "dev": "cd app && next dev",
     "build": "cd app && next build",
-    "preview": "next start",
-    "postbuild": "next-sitemap",
+    "preview": "cd app && npx serve@latest out",
+    "postbuild": "cd app && next-sitemap",
     "lint": "next lint",
     "format": "prettier -w ./src"
   },

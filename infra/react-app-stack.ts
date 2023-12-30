@@ -9,7 +9,7 @@ export interface ReactAppStackProps extends cdk.StackProps {
   readonly appName: string;
   readonly stage: string;
   readonly domain: string;
-
+  readonly websiteDomain: string;
   readonly zone: IHostedZone;
   readonly certificate: acm.Certificate;
 }

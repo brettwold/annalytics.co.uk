@@ -7,6 +7,7 @@ import { CertificateStack } from './certificate-stack';
 const appName = 'annalytics-website';
 const stage = 'dev';
 const domain = 'annalytics.co.uk';
+const websiteDomain = 'www.annalytics.co.uk';
 const ecoDevAccount = '063191902099';
 const primaryRegion = 'us-east-1' // cloudfront certificate have to be in us-east-1...!?!?
 
@@ -19,6 +20,7 @@ const certStack = new CertificateStack(app,  getResourceName(appName, stage, 'ce
   appName,
   stage,
   domain,
+  websiteDomain,
 })
 
 new ReactAppStack(app, getResourceName(appName, stage, 'stack'), {
@@ -27,6 +29,7 @@ new ReactAppStack(app, getResourceName(appName, stage, 'stack'), {
   appName,
   stage,
   domain,
+  websiteDomain,
   zone: certStack.zone,
   certificate: certStack.certificate,
 });

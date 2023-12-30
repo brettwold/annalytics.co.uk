@@ -9,6 +9,7 @@ export interface CertificateStackProps extends cdk.StackProps {
   readonly appName: string;
   readonly stage: string;
   readonly domain: string;
+  readonly websiteDomain: string;
 }
 
 export class CertificateStack extends cdk.Stack {
@@ -21,7 +22,7 @@ export class CertificateStack extends cdk.Stack {
 
     this.zone = route53.HostedZone.fromLookup(this, 'domain-zone', {domainName: props.domain});
 
-    const domainName = `${props.appName}-${props.stage}.${props.domain}`;
+    const domainName = `${props.websiteDomain}`;
     this.certificate = new acm.Certificate(this, `certificate`, {
       domainName,
       validation: acm.CertificateValidation.fromDns(this.zone),

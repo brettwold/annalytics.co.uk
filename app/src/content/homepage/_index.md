@@ -12,7 +12,7 @@ banner:
 # Features
 features:
   - title: "Who am I?"
-    image: "/images/service-1.png"
+    image: "/images/image-placeholder.png"
     content: "I'm a pragmatic software architect and developer, focused on cloud based solutions. I have been responsible for the design and development of many online solutions over more than 
     30 years. This has included solutions for companies large and small."
     bulletpoints:
@@ -27,7 +27,7 @@ features:
       link: ""
 
   - title: "What do I do?"
-    image: "/images/service-2.png"
+    image: "/images/image-placeholder.png"
     content: "Hands on design and development of cloud based solutions for all types of application."
     bulletpoints:
       - "Software architecture and development."
@@ -43,7 +43,7 @@ features:
       link: ""
 
   - title: "Contact"
-    image: "/images/service-3.png"
+    image: "/images/image-placeholder.png"
     content: "I'm interested in hearing from you if you have a cloud native project that you need help with, feel free to use the contact details below."
     bulletpoints:
       - "brett@annalytics.co.uk"
