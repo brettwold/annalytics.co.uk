@@ -1,7 +1,7 @@
 ---
-title: "Deploy a Next.js website to AWS utilising S3, Cloudfront and AWS CDK"
+title: "Deploy a serverless Next.js website to AWS utilising S3, Cloudfront and AWS CDK"
 meta_title: ""
-description: "Deploy a Next.js website statically to AWS using S3 and Cloudfront"
+description: "Deploy a serverless Next.js website statically to AWS using S3 and Cloudfront"
 date: 2023-12-31T00:00:00Z
 image: "/images/cloudfront-static-website.png"
 categories: ["IaC"]
