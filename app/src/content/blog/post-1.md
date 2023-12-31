@@ -29,6 +29,8 @@ The application is setup as two CDK stacks. This is so that the bucket could in 
 
 #### Certificate Stack
 
+This stack simply creates a new subdomain certificate for your domain. Usually this would be for the `www` subdomain. The code below assumes there is an existing hosted zone in Route53 for you primary domain name.
+
 ```typescript
 export class CertificateStack extends cdk.Stack {
 
@@ -48,3 +50,109 @@ export class CertificateStack extends cdk.Stack {
   }
 }
 ```
+
+#### Website Stack
+
+This stack creates the S3 bucket, Cloudfront Distribution and the A records in route53.
+
+First of all the bucket is created. As you can see it is a private bucket as only Cloudfront needs to be able to access it. 
+
+```typescript
+this.hostingBucket = new Bucket(this, getResourceName(props.appName, props.stage, 'webapp'), {
+  bucketName: getResourceName(props.appName, props.stage, 'webapp'),
+  autoDeleteObjects: true,
+  blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+  removalPolicy: RemovalPolicy.DESTROY,
+});
+```
+
+Next the Cloudfront distribution is setup which takes a reference to the certificate created in the other stack and the bucket created above. 
+
+In the example below the caching is disabled, this is useful when you are setting up your website. However, once your site is stable you should change this value to a different option to allow Cloudfront to cache your website resources as required. Also notice the `errorResponses` section which is setup to redirect everything back to index.html with a 200 status code, this is required as the application is a React/Next.js single page application where everything is essentially served by a single index.html page.
+
+```typescript
+const distribution = new Distribution(this, getResourceName(props.appName, props.stage, 'cloudfront-dist'), {
+  certificate: props.certificate,
+  domainNames: [`${props.websiteDomain}`],
+  defaultBehavior: {
+    origin: new S3Origin(this.hostingBucket),
+    viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+    cachePolicy: CachePolicy.CACHING_DISABLED // possibly temporary
+  },
+  defaultRootObject: 'index.html',
+  errorResponses: [
+    {
+      httpStatus: 404,
+      responseHttpStatus: 200,
+      responsePagePath: '/index.html',
+    },
+    {
+      httpStatus: 403,
+      responseHttpStatus: 200,
+      responsePagePath: '/index.html',
+    }
+  ],
+});
+```
+
+Next we create two A records that tell Route53 that the subdomain should be routed to the Cloudfront distribution. The A record is for IPv4 and the AAAA record is for IPv6. Technically you can omit the IPv6 record but I've left it here for completeness.
+
+```typescript
+const subZone = route53.HostedZone.fromHostedZoneAttributes(this, getResourceName(props.appName, props.stage, 'zone'), {
+  zoneName: domainName,
+  hostedZoneId: zone.hostedZoneId,
+});
+new route53.ARecord(this, "aRecord", {
+  zone: subZone,
+  target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
+  recordName: props.subdomain,
+});
+
+new route53.AaaaRecord(this, "aliasRecord", {
+  zone: subZone,
+  target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
+  recordName: props.subdomain,
+});
+```
+
+The bucket created above also need to be loaded with the website resources. This can be done either by use of some more CDK code as shown below or manually performs via AWS console or even via the CLI using AWS SDK commands.
+
+The CDK code below uses the `BucketDeployment` class to upload all the built Next.js output to the bucket. The Next.js application must be built using `npm run build` so that the static assets are created.
+
+```typescript
+// deploy app files to s3 bucket
+new BucketDeployment(this, getResourceName(props.appName, props.stage, 'bucket-deployment'), {
+  sources: [Source.asset(path)],
+  destinationBucket: service.hostingBucket,
+});
+```
+
+> In the source repo for this project you will see this code as it then makes a complete build and deployment of the website together in one place.
+
+These two stacks can then be combined as a single CDK `App` like so.
+
+```typescript
+const certStack = new CertificateStack(app,  getResourceName(appName, stage, 'cert-stack'), {
+  env: { account: awsAccount, region: primaryRegion },
+  crossRegionReferences: true,
+  appName,
+  stage,
+  domain,
+  websiteDomain,
+});
+
+new ReactAppStack(app, getResourceName(appName, stage, 'stack'), {
+  env: { account: awsAccount, region: primaryRegion },
+  crossRegionReferences: true,
+  appName,
+  stage,
+  domain,
+  websiteDomain,
+  zone: certStack.zone,
+  certificate: certStack.certificate,
+});
+```
+
+----
+
+Once again for access to the [full code for this post see here](https://github.com/brettwold/annalytics.co.uk) feel free to download, edit and use it for your own website if you want. 
