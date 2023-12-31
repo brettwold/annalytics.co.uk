@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://www.annalytics.co.uk
+
+# Sitemaps
+Sitemap: https://www.annalytics.co.uk/sitemap.xml
