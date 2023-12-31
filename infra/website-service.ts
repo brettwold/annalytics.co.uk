@@ -2,24 +2,32 @@ import { Construct } from 'constructs';
 import { CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
-import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import { CachePolicy, Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3';
-import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
 import { getResourceName } from './utils';
-import { ReactAppStackProps } from './react-app-stack';
 import { IHostedZone } from 'aws-cdk-lib/aws-route53';
+import * as cdk from 'aws-cdk-lib';
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 
-const path = './app/out';
+export interface WebsiteServiceProps extends cdk.StackProps {
+  readonly appName: string;
+  readonly stage: string;
+  readonly domain: string;
+  readonly websiteDomain: string;
+  readonly zone: IHostedZone;
+  readonly certificate: acm.Certificate;
+  readonly subdomain: string;
+}
 
 export class WebsiteService extends Construct {
-  constructor(scope: Construct, id: string, props: ReactAppStackProps) {
+
+  readonly hostingBucket: Bucket;
+
+  constructor(scope: Construct, id: string, props: WebsiteServiceProps) {
     super(scope, id);
 
-    const fqdn = `${props.websiteDomain}`;
-
-    const hostingBucket = new Bucket(this, getResourceName(props.appName, props.stage, 'webapp'), {
+    this.hostingBucket = new Bucket(this, getResourceName(props.appName, props.stage, 'webapp'), {
       bucketName: getResourceName(props.appName, props.stage, 'webapp'),
       autoDeleteObjects: true,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
@@ -30,7 +38,7 @@ export class WebsiteService extends Construct {
       certificate: props.certificate,
       domainNames: [`${props.websiteDomain}`],
       defaultBehavior: {
-        origin: new S3Origin(hostingBucket),
+        origin: new S3Origin(this.hostingBucket),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: CachePolicy.CACHING_DISABLED // possibly temporary
       },
@@ -49,11 +57,6 @@ export class WebsiteService extends Construct {
       ],
     });
 
-    new BucketDeployment(this, getResourceName(props.appName, props.stage, 'bucket-deployment'), {
-      sources: [Source.asset(path)],
-      destinationBucket: hostingBucket,
-    });
-
     this.setupRoute53Records(props.domain, props.zone, distribution, props);
 
     new CfnOutput(this, 'WebsiteCloudFrontURL', {
@@ -63,27 +66,27 @@ export class WebsiteService extends Construct {
     });
 
     new CfnOutput(this, 'WebsiteBucketName', {
-      value: hostingBucket.bucketName,
+      value: this.hostingBucket.bucketName,
       description: 'The name of the S3 bucket',
       exportName: 'WebsiteBucketName',
     });
   }
 
-  private setupRoute53Records(domainName: string, zone: IHostedZone, distribution: Distribution, deploymentContext: ReactAppStackProps) {
-    const subZone = route53.HostedZone.fromHostedZoneAttributes(this, getResourceName(deploymentContext.appName, deploymentContext.stage, 'zone'), {
+  private setupRoute53Records(domainName: string, zone: IHostedZone, distribution: Distribution, props: WebsiteServiceProps) {
+    const subZone = route53.HostedZone.fromHostedZoneAttributes(this, getResourceName(props.appName, props.stage, 'zone'), {
       zoneName: domainName,
       hostedZoneId: zone.hostedZoneId,
     });
     new route53.ARecord(this, "aRecord", {
       zone: subZone,
       target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
-      recordName: 'www',
+      recordName: props.subdomain,
     });
 
     new route53.AaaaRecord(this, "aliasRecord", {
       zone: subZone,
       target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
-      recordName: 'www',
+      recordName: props.subdomain,
     });
   }
 }

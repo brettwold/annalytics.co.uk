@@ -13,7 +13,8 @@
     "preview": "cd app && npx serve@latest out",
     "postbuild": "cd app && next-sitemap",
     "lint": "next lint",
-    "format": "prettier -w ./src"
+    "format": "prettier -w ./src",
+    "deploy": "cdk deploy --all"
   },
   "dependencies": {
     "aws-cdk-lib": "2.117.0",

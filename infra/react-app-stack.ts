@@ -4,6 +4,7 @@ import { WebsiteService } from './website-service';
 import { getResourceName } from './utils';
 import { IHostedZone } from 'aws-cdk-lib/aws-route53';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
+import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
 
 export interface ReactAppStackProps extends cdk.StackProps {
   readonly appName: string;
@@ -14,10 +15,21 @@ export interface ReactAppStackProps extends cdk.StackProps {
   readonly certificate: acm.Certificate;
 }
 
+const path = './app/out';
+
 export class ReactAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ReactAppStackProps) {
     super(scope, id, props);
 
-    new WebsiteService(this, getResourceName(props.appName, props.stage, 'deployment'), props);
+    const service = new WebsiteService(this, getResourceName(props.appName, props.stage, 'deployment'), {
+      ...props,
+      subdomain: 'www',
+    });
+
+    // deploy app files to s3 bucket
+    new BucketDeployment(this, getResourceName(props.appName, props.stage, 'bucket-deployment'), {
+      sources: [Source.asset(path)],
+      destinationBucket: service.hostingBucket,
+    });
   }
 }
