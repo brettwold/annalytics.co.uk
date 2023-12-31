@@ -5,7 +5,7 @@ import SeoMeta from "@/partials/SeoMeta";
 import { RegularPage } from "@/types";
 
 // remove dynamicParams
-export const dynamicParams = false;
+export const dynamic = 'force-static';
 
 // generate static params
 export const generateStaticParams = () => {

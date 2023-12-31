@@ -23,7 +23,7 @@ const certStack = new CertificateStack(app,  getResourceName(appName, stage, 'ce
   stage,
   domain,
   websiteDomain,
-})
+});
 
 new ReactAppStack(app, getResourceName(appName, stage, 'stack'), {
   env: { account: awsAccount, region: primaryRegion },
