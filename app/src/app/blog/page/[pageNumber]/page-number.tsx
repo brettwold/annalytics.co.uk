@@ -12,10 +12,11 @@ import { Post } from "@/types";
 const { blog_folder, pagination } = config.settings;
 
 // remove dynamicParams
+export const dynamicParams = false;
 export const dynamic = 'force-static';
 
 // generate static params
-export const generateStaticParams = () => {
+export async function generateStaticParams(): Promise<{ page: string }[]> {
   const allPost: Post[] = getSinglePage(blog_folder);
   const allSlug: string[] = allPost.map((item) => item.slug!);
   const totalPages = Math.ceil(allSlug.length / pagination);
@@ -41,7 +42,7 @@ function spreadPages(num: number): number[] {
 }
 
 // for all regular pages
-const Posts = ({ params }: { params: { page: number } }) => {
+const Posts = ({ params }: { params: { page: string } }) => {
   const postIndex: Post = getListPage(`${blog_folder}/_index.md`);
   const { title, meta_title, description, image } = postIndex.frontmatter;
   const posts: Post[] = getSinglePage(blog_folder);

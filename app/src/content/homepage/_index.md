@@ -12,7 +12,7 @@ banner:
 # Features
 features:
   - title: "Who am I?"
-    image: "/images/image-placeholder.png"
+    image: "/images/sunset.jpg"
     content: "I'm a pragmatic software architect and developer, focused on cloud based solutions. I have been responsible for the design and development of many online solutions over more than 
     30 years. This has included solutions for companies large and small."
     bulletpoints:
@@ -27,7 +27,7 @@ features:
       link: ""
 
   - title: "What do I do?"
-    image: "/images/image-placeholder.png"
+    image: "/images/do-right.png"
     content: "Hands on design and development of cloud based solutions for all types of application."
     bulletpoints:
       - "Software architecture and development."
@@ -43,10 +43,13 @@ features:
       link: ""
 
   - title: "Contact"
-    image: "/images/image-placeholder.png"
+    image: "/images/wendy-scofield-unsplash.jpg"
     content: "I'm interested in hearing from you if you have a cloud native project that you need help with, feel free to use the contact details below."
     bulletpoints:
       - "brett@annalytics.co.uk"
+      - ""
+      - ""
+      - "<small>Photo by <a href='https://unsplash.com/@gypsycompassrose?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash'>Wendy Scofield</a> on <a href='https://unsplash.com/photos/photography-of-black-dial-telephone-fnlNwb5sB5Y?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash'>Unsplash</a></small>"  
     button:
       enable: false
       label: ""

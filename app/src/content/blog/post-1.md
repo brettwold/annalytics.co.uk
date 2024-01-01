@@ -1,5 +1,5 @@
 ---
-title: "Deploy a serverless Next.js website to AWS utilising S3, Cloudfront and AWS CDK"
+title: "Deploy a serverless Next.js website with AWS CDK - utilising S3 and Cloudfront"
 meta_title: ""
 description: "Deploy a serverless Next.js website statically to AWS using S3 and Cloudfront"
 date: 2023-12-31T00:00:00Z
@@ -10,8 +10,22 @@ tags: ["aws", "cdk", "s3", "cloudfront", "route53", "nextjs", "typescript"]
 draft: false
 ---
 
-This post is going to show you how the site you are looking at is deployed to AWS. It is essentially a single page static website but it is built using Next.js to enable easy regular updating. You can view the [full source of the application including the IaC deployment code here](https://github.com/brettwold/annalytics.co.uk). The Next.js implementation itself is a slightly modified version of the "Nextjs + Tailwind CSS + TypeScript Starter and Boilerplate" from zeon-studio which [can be found here](https://github.com/zeon-studio/nextplate).
+This post is going to show you how the site you are looking at is deployed to AWS. It is essentially a single page static website but it is built using Next.js to enable easy regular updating. Using an S3 bucket in conjunction with Cloudfront provides an incredibly stable and scalable website really quickly, for little or no cost. The CDK code discussed in this post show you how quickly and easily this site can be deployed to AWS in a repeatable and adaptable way. Here I am using Next.js to build and export a static website so there is no serverside element. This does mean that to update the content you need to re-build and upload new assets, but this is a small price to pay for the simplicity and low-cost of this solution. In reality this is a low content changing site; I won't be updating it all the time, only when I create a new blog will the content be likely to change. You could easily add the ability for this site to be exported and deployed/updated as a GitHub action each time there is a new push to main (maybe I'll add this at some point :) ). Ask yourself - "How often do you really update that website?". If the answer is not very often then this solution may be ideal for you. This does also mean that the serverside Next.js dynamic route features cannot be used.
 
+In this post I am only going to cover the CDK implementation part but the full list of steps starting from nothing would be:
+
+1) Create AWS account
+2) Setup deployment user/role with least-privilege access and decide how your deployment user will access AWS e.g. Access Credentials, SSO, OIDC etc. 
+3) Setup hosted zone using either a new domain created within AWS or by adjusting the nameserver settings of your existing domain so that Route53 is responsible for nameserving your domain
+4) Ensure that AWS SCM can create subdomain certificates for your domain
+5) Bootstrap CDK for your account and region(s)
+6) Develop and test website locally
+7) Build (export) Next.js static website
+8) Test static website locally
+9) Deploy application using CDK
+10) Test deployed website 
+
+You can view the [full source of the application including the IaC deployment code here](https://github.com/brettwold/annalytics.co.uk). The Next.js implementation itself is a slightly modified version of the "Nextjs + Tailwind CSS + TypeScript Starter and Boilerplate" from zeon-studio which [can be found here](https://github.com/zeon-studio/nextplate).
 
 ## Application Design
 
@@ -127,11 +141,13 @@ new BucketDeployment(this, getResourceName(props.appName, props.stage, 'bucket-d
 });
 ```
 
-> In the source repo for this project you will see this code as it then makes a complete build and deployment of the website together in one place.
+> In the source repo for this project you will see this code as it then makes a complete build and deployment of the website together in one place as per AWS well-architected guidelines for CDK applications.
 
 These two stacks can then be combined as a single CDK `App` like so.
 
 ```typescript
+const app = new cdk.App();
+
 const certStack = new CertificateStack(app,  getResourceName(appName, stage, 'cert-stack'), {
   env: { account: awsAccount, region: primaryRegion },
   crossRegionReferences: true,

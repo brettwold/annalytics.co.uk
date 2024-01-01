@@ -10,6 +10,8 @@ import SeoMeta from "@/partials/SeoMeta";
 import { Post } from "@/types";
 const { blog_folder, pagination } = config.settings;
 
+export const dynamic = 'force-static';
+
 // for all regular pages
 const Posts = () => {
   const postIndex: Post = getListPage(`${blog_folder}/_index.md`);
